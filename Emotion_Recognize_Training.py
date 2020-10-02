@@ -7,7 +7,6 @@ from keras.losses import categorical_crossentropy
 from keras.utils import np_utils
 import matplotlib.pyplot as plt
 
-
 df=pd.read_csv('./fer2013/fer2013.csv')
 
 X_train,train_y,X_test,test_y=[],[],[],[]
@@ -32,7 +31,7 @@ epochs = 1
 width, height = 48, 48
 
 from sklearn.model_selection import train_test_split
-X_test,X_validate,test_y,y_validate=train_test_split(X_test,test_y,test_size=0.5,random_state=0)
+X_test, X_validate, test_y, y_validate = train_test_split(X_test,test_y,test_size=0.5,random_state=0)
 
 X_train = np.array(X_train,'float32')
 train_y = np.array(train_y,'float32')
@@ -56,33 +55,34 @@ X_validate/=np.std(X_validate, axis=0)
 
 X_train = X_train.reshape(X_train.shape[0], 48, 48, 1)
 X_test = X_test.reshape(X_test.shape[0], 48, 48, 1)
-X_validate=X_validate.reshape(X_validate.shape[0],48,48,1)
+X_validate = X_validate.reshape(X_validate.shape[0],48,48,1)
 
+def create_model():
+    """
+    Create deep learning model for emotion detection.
+    """
+    model = Sequential()
+    model.add(Conv2D(128, kernel_size=(3, 3), activation='relu', input_shape=(X_train.shape[1:])))
+    model.add(MaxPooling2D(pool_size=(2,2), strides=(2, 2)))
+    model.add(BatchNormalization())
 
-model = Sequential()
-model.add(Conv2D(128, kernel_size=(3, 3), activation='relu', input_shape=(X_train.shape[1:])))
-model.add(MaxPooling2D(pool_size=(2,2), strides=(2, 2)))
-model.add(BatchNormalization())
+    model.add(Conv2D(64,kernel_size= (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2,2), strides=(2, 2)))
+    model.add(BatchNormalization())
 
-model.add(Conv2D(64,kernel_size= (3, 3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2,2), strides=(2, 2)))
-model.add(BatchNormalization())
+    model.add(Conv2D(32, (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2,2), strides=(2, 2)))
+    model.add(BatchNormalization())
 
-model.add(Conv2D(32, (3, 3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2,2), strides=(2, 2)))
-model.add(BatchNormalization())
+    model.add(Flatten())
+    model.add(Dense(256, activation='relu'))
+    model.add(Dropout(0.2))
+    model.add(Dense(256, activation='relu'))
+    model.add(Dropout(0.2))
+    model.add(Dense(num_labels, activation='softmax'))
 
-model.add(Flatten())
-
-
-model.add(Dense(256, activation='relu'))
-model.add(Dropout(0.2))
-model.add(Dense(256, activation='relu'))
-model.add(Dropout(0.2))
-
-model.add(Dense(num_labels, activation='softmax'))
+model = create_model()
 model.summary()
-
 
 model.compile(loss=categorical_crossentropy,
               optimizer='Adam',
